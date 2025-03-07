@@ -1,18 +1,27 @@
 const express = require('express');
+const path = require('path');
 const router = express.Router();
-const axios = require('axios');
+const app = express();
 
-router.get('/',async(req,res)=>{
-    try {
-        const response = await axios.get('./views/events.ejs');
-        const events = response.data;
-        res.render('events',{events});
-    } catch (err) {
-        console.error(err);
-            res.status(500).send('Internal Server Error');
-     
-        
-    }
+// Set the view engine to ejs
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// ...existing code...
+
+app.use('/event', router);
+
+router.get('/', (req, res) => {
+  // Fetch events from the database or any other source
+  const events = [
+    { name: 'Event 1', date: '2023-10-01' },
+    { name: 'Event 2', date: '2023-10-15' }
+  ];
+
+  // Ensure events are passed to the view
+  res.render('events', { events });
 });
+
+// ...existing code...
 
 module.exports = router;

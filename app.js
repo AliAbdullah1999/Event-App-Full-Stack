@@ -7,6 +7,9 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const flash = require('connect-flash');
 
 const User = require('./models/User');
 
@@ -16,12 +19,15 @@ mongoose.connect('mongodb://localhost:27017/event-app')
 .catch(err => console.error(err));
 
 const app = express();
+const dashboardRoute = require('./routes/dashboard');
 
 // Set view engine (using EJS)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // Middleware
+app.use(helmet());
+app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
@@ -29,6 +35,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -65,12 +72,33 @@ const eventRoutes = require('./routes/event');
 
 app.use('/', authRoutes);
 app.use('/events', eventRoutes);
+app.use('/auth', authRoutes); // Add this line
+app.use('/', dashboardRoute);
 
 // Home route (for example)
 app.get('/', (req, res) => {
   res.render('index');
 });
 
+// Register route
+app.get('/register', (req, res) => {
+  const messages = req.flash('error');
+  res.render('register', { messages });
+});
+
+app.post('/auth/register', (req, res) => {
+  // ...existing code...
+  const error = false; // Replace with actual error checking logic
+  if (error) {
+    req.flash('error', 'Registration failed');
+    return res.redirect('/register');
+  }
+  // ...existing code...
+  res.redirect('/success'); // Replace with actual success redirect
+});
+
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app;

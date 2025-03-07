@@ -6,14 +6,9 @@
 <body>
   <h1>Events</h1>
   <ul>
-    <% if(events && events.length) { %>
-      <% events.forEach(event => { %>
-        <li><%= event.name %> - <%= event.date %></li>
-      <% }) %>
-    <% } else { %>
-      <li>No events available</li>
-    <% } %>
+    <% events.forEach(event => { %>
+      <li><%= event.name %> - <%= event.date %></li>
+    <% }) %>
   </ul>
-  <a href="/">Back to Home</a>
 </body>
 </html>
