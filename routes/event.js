@@ -4,7 +4,7 @@ const axios = require('axios');
 
 router.get('/',async(req,res)=>{
     try {
-        const response = await axios.get('http://localhost:1800/events');
+        const response = await axios.get('./views/events.ejs');
         const events = response.data;
         res.render('events',{events});
     } catch (err) {
