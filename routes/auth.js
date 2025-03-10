@@ -50,8 +50,8 @@ router.post("/register", async (req, res) => {
 
 // Handle login logic
 router.post('/login', passport.authenticate('local', {
-  successRedirect: '/events',  // Redirect to event page on success
-  failureRedirect: '/login',   // Redirect back to login on failure
+  successRedirect: '/events',  // Redirect to events page on success
+  failureRedirect: '/login',
   failureFlash: true
 }));
 

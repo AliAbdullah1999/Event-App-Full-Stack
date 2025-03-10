@@ -14,9 +14,17 @@ const flash = require('connect-flash');
 const User = require('./models/User');
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/event-app')
-.then(() => console.log('MongoDB connected'))
-.catch(err => console.error(err));
+const dbURI = "mongodb://localhost:27017/eventapp";
+mongoose.connect(dbURI)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    // Start the server only after the connection is established
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB", err);
+  });
 
 const app = express();
 const dashboardRoute = require('./routes/dashboard');
@@ -70,10 +78,11 @@ passport.deserializeUser(async (id, done) => {
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/event');
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/auth', authRoutes);
 app.use('/', authRoutes);
 app.use('/events', eventRoutes);
-app.use('/auth', authRoutes); // Add this line
-app.use('/', dashboardRoute);
+app.use('/', dashboardRoute); // Ensure the dashboard route is correctly included and accessible
 
 // Home route (for example)
 app.get('/', (req, res) => {
@@ -96,9 +105,5 @@ app.post('/auth/register', (req, res) => {
   // ...existing code...
   res.redirect('/success'); // Replace with actual success redirect
 });
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 module.exports = app;
