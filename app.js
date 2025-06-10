@@ -20,8 +20,7 @@ mongoose.connect(dbURI)
   .then(() => {
     console.log("Connected to MongoDB");
     // Start the server only after the connection is established
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    
   })
   .catch((err) => {
     console.error("Failed to connect to MongoDB", err);
@@ -124,6 +123,14 @@ app.use(errorHandler);
 // 404 handler
 app.use((req, res) => {
     res.status(404).render('error/404');
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).render('error/error', {
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
 });
 
 module.exports = app;

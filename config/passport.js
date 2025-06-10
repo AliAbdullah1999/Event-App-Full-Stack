@@ -10,32 +10,48 @@ module.exports = function(passport) {
         passReqToCallback: true
     }, async (req, username, password, done) => {
         try {
-            const user = await User.findOne({ username: username.toLowerCase() });
+            // Try to find user by username or email
+            const user = await User.findOne({
+                $or: [
+                    { username: username.toLowerCase() },
+                    { email: username.toLowerCase() }
+                ]
+            });
             
             if (!user) {
-                return done(null, false, { message: 'Incorrect username.' });
+                return done(null, false, { message: 'Invalid username or email.' });
             }
 
             const isMatch = await bcrypt.compare(password, user.passwordHash);
             if (!isMatch) {
-                return done(null, false, { message: 'Incorrect password.' });
+                return done(null, false, { message: 'Invalid password.' });
             }
 
             return done(null, user);
         } catch (err) {
+            console.error('Login error:', err);
             return done(err);
         }
     }));
 
     passport.serializeUser((user, done) => {
-        done(null, user.id);
+        try {
+            done(null, user.id);
+        } catch (err) {
+            console.error('Serialize error:', err);
+            done(err);
+        }
     });
 
     passport.deserializeUser(async (id, done) => {
         try {
-            const user = await User.findById(id);
+            const user = await User.findById(id).select('-passwordHash');
+            if (!user) {
+                return done(null, false);
+            }
             done(null, user);
         } catch (err) {
+            console.error('Deserialize error:', err);
             done(err);
         }
     });

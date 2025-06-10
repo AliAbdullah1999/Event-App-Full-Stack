@@ -4,6 +4,121 @@
   <title>Dashboard</title>
 </head>
 <body>
+  <%- include('partials/header') %>
+
+  <div class="page-header">
+    <div class="container">
+      <h1 class="display-4 mb-0">Dashboard</h1>
+    </div>
+  </div>
+
+  <div class="container py-5">
+    <div class="row g-4">
+      <!-- Statistics Cards -->
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+            <h3 class="h5 card-title">My Events</h3>
+            <p class="display-4 fw-bold mb-0"><%= typeof myEvents !== 'undefined' ? myEvents.length : 0 %></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-users fa-3x text-success mb-3"></i>
+            <h3 class="h5 card-title">Registered Attendees</h3>
+            <p class="display-4 fw-bold mb-0"><%= typeof totalAttendees !== 'undefined' ? totalAttendees : 0 %></p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-star fa-3x text-warning mb-3"></i>
+            <h3 class="h5 card-title">Upcoming Events</h3>
+            <p class="display-4 fw-bold mb-0"><%= typeof upcomingEvents !== 'undefined' ? upcomingEvents.length : 0 %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="h4 mb-0">Quick Actions</h2>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <a href="/events/create" class="card border-0 shadow-sm h-100 text-decoration-none">
+              <div class="card-body d-flex align-items-center">
+                <i class="fas fa-plus fa-2x text-primary me-3"></i>
+                <div>
+                  <h3 class="h6 mb-1">Create New Event</h3>
+                  <p class="text-muted small mb-0">Start planning your next event</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="/profile" class="card border-0 shadow-sm h-100 text-decoration-none">
+              <div class="card-body d-flex align-items-center">
+                <i class="fas fa-user-edit fa-2x text-success me-3"></i>
+                <div>
+                  <h3 class="h6 mb-1">Edit Profile</h3>
+                  <p class="text-muted small mb-0">Update your information</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="/events" class="card border-0 shadow-sm h-100 text-decoration-none">
+              <div class="card-body d-flex align-items-center">
+                <i class="fas fa-search fa-2x text-info me-3"></i>
+                <div>
+                  <h3 class="h6 mb-1">Browse Events</h3>
+                  <p class="text-muted small mb-0">Discover new events</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Events -->
+    <div class="row mt-5">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="h4 mb-0">My Events</h2>
+          <a href="/events/create" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-2"></i>Create Event
+          </a>
+        </div>
+        
+        <% if (typeof myEvents !== 'undefined' && myEvents.length > 0) { %>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Event</th>
+                  <th>Date</th>
+                  <th>Location</th>
+                  <th>Attendees</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% myEvents.forEach(function(event) { %>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <% if (event.image) { %>
+                          <img src="<%= event.image %>" alt="<%= event.title %>" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                        <% } else { %>
   <h1>Dashboard</h1>
   <p>Welcome, <%= user.username %>!</p>
   <a href="/dashboard">Dashboard</a>

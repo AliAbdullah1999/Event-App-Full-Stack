@@ -5,22 +5,64 @@
   <link rel="stylesheet" href="/css/login.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Login</h1>
-    <% if (messages.error) { %>
-      <p><%= messages.error %></p>
-    <% } %>
-    <form method="POST" action="/auth/login">
-      <label for="username">Username:</label>
-      <input type="text" name="username" id="username" required>
-      <br>
+  <%- include('partials/header') %>
 
-      <label for="password">Password:</label>
-      <input type="password" name="password" id="password" required>
-      <br>
-      <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="/auth/register">Register here</a></p>
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">Login</h4>
+          </div>
+          <div class="card-body">
+            <% if (messages.success) { %>
+              <div class="alert alert-success">
+                <%= messages.success %>
+              </div>
+            <% } %>
+
+            <% if (messages.error) { %>
+              <div class="alert alert-danger">
+                <%= messages.error %>
+              </div>
+            <% } %>
+
+            <form action="/auth/login" method="POST">
+              <div class="mb-3">
+                <label for="username" class="form-label">Username or Email</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-user"></i>
+                  </span>
+                  <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <a href="/auth/register" class="btn btn-outline-secondary">
+                  <i class="fas fa-user-plus"></i> Register
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <%- include('partials/footer') %>
 </body>
 </html>

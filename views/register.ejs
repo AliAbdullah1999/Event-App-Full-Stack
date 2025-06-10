@@ -8,28 +8,123 @@
   <link rel="stylesheet" href="/css/register.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Register</h1>
-    <% var messages = messages || []; %>
-    <% if (messages && messages.length > 0) { %>
-      <p><%= messages[0] %></p>
-    <% } %>
-    <form method="POST" action="/auth/register">
-      <label for="firstname">Firstname:</label>
-      <input type="text" name="firstname" id="firstname" required>
-      <label for="lastname">Lastname:</label>
-      <input type="text" name="lastname" id="lastname" required>
-      <label for="username">Username:</label>
-      <input type="text" name="username" id="username" required>
-      <label for="email">Email:</label>
-      <input type="email" name="email" id="email" required>
-      <label for="password">Password:</label>
-      <input type="password" name="password" id="password" required>
-      
-      <button type="submit">Register</button>
-      
-    </form>
-    <p>Already have an account? <a href="/auth/login">Login here</a></p>
+  <%- include('partials/header') %>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-primary text-white text-center py-3">
+            <h4 class="mb-0">Create Account</h4>
+          </div>
+          <div class="card-body p-4">
+            <% if (messages.error) { %>
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= messages.error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            <% } %>
+
+            <form action="/auth/register" method="POST" class="needs-validation" novalidate>
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-user"></i>
+                  </span>
+                  <input type="text" class="form-control" id="username" name="username" required
+                    minlength="3" maxlength="20" pattern="^[a-zA-Z0-9_-]+$">
+                  <div class="invalid-feedback">
+                    Username must be 3-20 characters long and can only contain letters, numbers, underscores, and hyphens.
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                  <div class="invalid-feedback">
+                    Please enter a valid email address.
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" class="form-control" id="password" name="password" required
+                    minlength="6">
+                  <div class="invalid-feedback">
+                    Password must be at least 6 characters long.
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                  <div class="invalid-feedback">
+                    Passwords do not match.
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-user-plus me-2"></i>Register
+                </button>
+                <a href="/auth/login" class="btn btn-outline-secondary">
+                  <i class="fas fa-sign-in-alt me-2"></i>Already have an account? Login
+                </a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <script>
+    // Form validation
+    (function () {
+      'use strict'
+      const forms = document.querySelectorAll('.needs-validation')
+      
+      Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+          if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+
+          // Check if passwords match
+          const password = form.querySelector('#password')
+          const confirmPassword = form.querySelector('#confirmPassword')
+          if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity('Passwords do not match')
+            event.preventDefault()
+            event.stopPropagation()
+          } else {
+            confirmPassword.setCustomValidity('')
+          }
+
+          form.classList.add('was-validated')
+        }, false)
+      })
+    })()
+  </script>
+
+  <%- include('partials/footer') %>
 </body>
 </html>
