@@ -1,15 +1,16 @@
 // app.js
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const flash = require('connect-flash');
+const cors = require('cors');
+const { apiLimiter } = require('./middleware/rateLimiter');
+const errorHandler = require('./middleware/errorHandler');
 
 const User = require('./models/User');
 
@@ -19,7 +20,7 @@ mongoose.connect(dbURI)
   .then(() => {
     console.log("Connected to MongoDB");
     // Start the server only after the connection is established
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {
@@ -29,60 +30,71 @@ mongoose.connect(dbURI)
 const app = express();
 const dashboardRoute = require('./routes/dashboard');
 
-// Set view engine (using EJS)
+// Initialize database connection
+require('./config/database')();
+
+// Passport config
+require('./config/passport')(passport);
+
+// Security Middleware
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+        },
+    },
+}));
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? process.env.ALLOWED_ORIGINS : '*',
+    credentials: true
+}));
+
+// View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Middleware
-app.use(helmet());
+// General middleware
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Session configuration
 app.use(session({
-  secret: 'your_secret_key',
-  resave: false,
-  saveUninitialized: false
+    secret: process.env.SESSION_SECRET || 'fallback_secret_change_this',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
-app.use(flash());
+
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(flash());
 
-// Passport Local Strategy using MongoDB
-passport.use(new LocalStrategy(async (username, password, done) => {
-  try {
-    const user = await User.findOne({ username });
-    if (!user) return done(null, false, { message: 'Incorrect username.' });
-    
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) return done(null, false, { message: 'Incorrect password.' });
-    
-    return done(null, user);
-  } catch (err) {
-    return done(err);
-  }
-}));
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
+// Global variables middleware
+app.use((req, res, next) => {
+    res.locals.user = req.user || null;
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
+    next();
 });
 
-// Use Routers
-const authRoutes = require('./routes/auth');
-const eventRoutes = require('./routes/event');
+// Rate limiting
+app.use('/api', apiLimiter);
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/auth', authRoutes);
-app.use('/', authRoutes);
-app.use('/events', eventRoutes);
-app.use('/', dashboardRoute); // Ensure the dashboard route is correctly included and accessible
+// Routes
+app.use('/auth', require('./routes/auth'));
+app.use('/events', require('./routes/event'));
+app.use('/', require('./routes/dashboard'));
 
 // Home route (for example)
 app.get('/', (req, res) => {
@@ -104,6 +116,14 @@ app.post('/auth/register', (req, res) => {
   }
   // ...existing code...
   res.redirect('/success'); // Replace with actual success redirect
+});
+
+// Error handling
+app.use(errorHandler);
+
+// 404 handler
+app.use((req, res) => {
+    res.status(404).render('error/404');
 });
 
 module.exports = app;
